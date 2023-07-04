@@ -1,45 +1,19 @@
-from enum import Enum
-from enum import IntEnum
 from pdb import set_trace
 from typing import Self
 
+from . import UnitEnums
+from .UnitType import UnitType
 from ..Traits import Trait
 
 class Unit:
-
-    class Type(Enum):
-        INFANTRY = 1
-        ARTILLERY = 2
-        CAVALRY = 3
-        AERIAL = 4
-
-    class Tier(IntEnum):
-        I = 1
-        II = 2
-        III = 3
-        IV = 4
-        V = 5
-
-    class Experience(IntEnum):
-        LEVIES = 1
-        REGULAR = 2
-        VETERAN = 3
-        ELITE = 4
-        SUPER_ELITE = 5
-
-    class Equipment(IntEnum):
-        LIGHT = 1
-        MEDIUM = 2
-        HEAVY = 3
-        SUPER_HEAVY = 4
-
     def __init__(self, 
                  name: str, 
+                 unit_type: type[UnitType],
                  description: str = '', 
                  ancestry: str = '', 
-                 experience: Experience = Experience.REGULAR,
-                 equipment: Equipment = Equipment.LIGHT,
-                 tier: Tier = Tier.I,
+                 experience: UnitEnums.Experience = UnitEnums.Experience.REGULAR,
+                 equipment: UnitEnums.Equipment = UnitEnums.Equipment.LIGHT,
+                 tier: UnitEnums.Tier = UnitEnums.Tier.I,
                  size: int = 6,
                  attacks: int = 1,
                  damage: int = 1,
@@ -51,6 +25,7 @@ class Unit:
                  command: int = 0,
                  traits: list[str] = []):
         self.name = name
+        self.unit_type = unit_type
         self.description = description
         self.battles = Unit.battles_from_xp(experience)
         self.traits = traits
@@ -87,12 +62,12 @@ class Unit:
             and self.tier == __value.tier
             and self.toughness == __value.toughness
             and self.traits == __value.traits
-            and self.type == __value.type
+            and self.unit_type == __value.unit_type
         )
         return matches
 
     def __repr__(self) -> str:
-        return f"{self.name}: [{self.experience}, {self.equipment}, {self.ancestry}, {self.Type}] \
+        return f"{self.name}: [{self.experience}, {self.equipment}, {self.ancestry}, {self.unit_type}] \
             Tier: {self.tier}, \
                 ATK: {self.attack} DEF {self.defense} POW {self.power} TOU {self.toughness} \
                 MOR {self.morale} COM {self.command}. Size {self.size}. {self.attacks} attacks \
@@ -110,50 +85,56 @@ class Unit:
         """Credits the unit with 1 battle experience and if it has enough experience to
         level up, it does so."""
         self.battles = self.battles + 1
-        if self.experience != Unit.Experience.LEVIES:
+        if self.experience != UnitEnums.Experience.LEVIES:
             if self.battles == 1 or self.battles == 4 or self.battles == 8:
                 self.level_up()
 
     def upgrade(self) -> None:
-        if self.experience == Unit.Experience.LEVIES:
+        if self.experience == UnitEnums.Experience.LEVIES:
             raise CannotUpgradeError("Cannot upgrade Levies")
-        if self.equipment == Unit.Equipment.SUPER_HEAVY:
+        if self.equipment == UnitEnums.Equipment.SUPER_HEAVY:
             raise CannotUpgradeError("Cannot upgrade equipment past super-heavy.")
-        self.equipment = Unit.Equipment(self.equipment + 1)
+        self.power, self.toughness, self.damage = self.unit_type.upgrade(self.equipment, self.power, self.toughness, self.damage)
+        self.equipment = UnitEnums.Equipment(self.equipment + 1)
 
     def downgrade(self) -> None:
-        if self.experience == Unit.Experience.LEVIES:
+        if self.experience == UnitEnums.Experience.LEVIES:
             raise CannotUpgradeError("Cannot downgrade Levies")
-        if self.equipment == Unit.Equipment.LIGHT:
+        if self.equipment == UnitEnums.Equipment.LIGHT:
             raise CannotUpgradeError("Cannot downgrade equipment below Light")
-        self.equipment = Unit.Equipment(self.equipment - 1)
+        self.power, self.toughness, self.damage = self.unit_type.downgrade(self.equipment, self.power, self.toughness, self.damage)
+        self.equipment = UnitEnums.Equipment(self.equipment - 1)
 
     def level_up(self) -> None:
         """Bumps the experience of the unit up one level. Throws an error if
         you try to raise it above super-elite experience."""
-        if self.experience == Unit.Experience.LEVIES:
+        if self.experience == UnitEnums.Experience.LEVIES:
             raise CannotLevelUpError("Cannot level up levies.")
-        if self.experience == Unit.Experience.SUPER_ELITE:
+        if self.experience == UnitEnums.Experience.SUPER_ELITE:
             raise CannotLevelUpError("Cannot level up a unit past Super-elite.")
-        self.experience = Unit.Experience(self.experience + 1)
+        self.attacks, self.attack, self.defense, self.morale, self.command = \
+            self.unit_type.level_up(self.experience, self.attacks, self.attack, self.defense, self.morale, self.command)
+        self.experience = UnitEnums.Experience(self.experience + 1)
         self.battles = Unit.battles_from_xp(self.experience)
 
     def level_down(self) -> None:
         """Reduces the experience of the unit one level. Usually as an 'undo' for
         leveling up a unit. Throws an error if you try to reduce a unit's level
         below Regular."""
-        if self.experience == Unit.Experience.LEVIES:
+        if self.experience == UnitEnums.Experience.LEVIES:
             raise CannotLevelUpError("Cannot level down levies.")
-        if self.experience == Unit.Experience.REGULAR:
+        if self.experience == UnitEnums.Experience.REGULAR:
             raise CannotLevelUpError("Cannot lower level below regular.")
-        self.experience = Unit.Experience(self.experience - 1)
+        self.attacks, self.attack, self.defense, self.morale, self.command = \
+            self.unit_type.level_down(self.experience, self.attacks, self.attack, self.defense, self.morale, self.command)
+        self.experience = UnitEnums.Experience(self.experience - 1)
         self.battles = Unit.battles_from_xp(self.experience)
 
     def to_dict(self) -> dict:
         to_return = {
             "name": self.name,
             "description": self.description,
-            "type": str(self.type),
+            "type": self.unit_type.__qualname__,
             "battles": self.battles,
             "traits": [],
             "experience": self.experience.name,
@@ -173,15 +154,15 @@ class Unit:
         for trait in self.traits:
             to_return["traits"].append(trait.to_dict())
         return to_return
-    
-    def battles_from_xp(experience: Experience) -> int:
-        if experience == Unit.Experience.REGULAR or experience == Unit.Experience.LEVIES:
+
+    def battles_from_xp(experience: UnitEnums.Experience) -> int:
+        if experience == UnitEnums.Experience.REGULAR or experience == UnitEnums.Experience.LEVIES:
             return 0
-        elif experience == Unit.Experience.VETERAN:
+        elif experience == UnitEnums.Experience.VETERAN:
             return 1
-        elif experience == Unit.Experience.ELITE:
+        elif experience == UnitEnums.Experience.ELITE:
             return 4
-        elif experience == Unit.Experience.SUPER_ELITE:
+        elif experience == UnitEnums.Experience.SUPER_ELITE:
             return 8
         else:
             raise NoSuchUnitExperienceError("Invalid unit experience detected: " + str(experience))

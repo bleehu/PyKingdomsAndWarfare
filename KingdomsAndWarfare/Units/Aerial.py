@@ -1,43 +1,37 @@
-from .Unit import Unit
+from . import UnitEnums
+from .UnitType import UnitType
 
+class Aerial(UnitType):
+    def level_up(experience: UnitEnums.Experience, attacks: int, attack: int, defense: int, morale: int, command: int) -> tuple[int, int, int, int, int]:
+        attack = attack + 1
+        defense = defense + 1
+        morale = morale + 1
+        command = command + 2
+        if experience == UnitEnums.Experience.VETERAN:
+            attacks = attacks + 1
+        return attacks, attack, defense, morale, command
 
-class Aerial(Unit):
-    def __init__(self, name: str, description: str):
-        self.type = Unit.Type.AERIAL
-        super().__init__(name, description)
+    def level_down(experience: UnitEnums.Experience, attacks: int, attack: int, defense: int, morale: int, command: int) -> tuple[int, int, int, int, int]:
+        attack = attack - 1
+        defense = defense - 1
+        morale = morale - 1
+        command = command - 2
+        if experience == UnitEnums.Experience.ELITE:
+            attacks = attacks - 1
+        return attacks, attack, defense, morale, command
 
-    def level_up(self) -> None:
-        self.attack = self.attack + 1
-        self.defense = self.defense + 1
-        self.morale = self.morale + 1
-        self.command = self.command + 2
-        if self.experience == Unit.Experience.VETERAN:
-            self.attacks = self.attacks + 1
-        super().level_up()
+    def upgrade(equipment: UnitEnums.Equipment, power: int, toughness: int, damage: int) -> tuple[int, int, int]:
+        """Upgrade a unit's equipment bonuses. This is usually done by spending gold."""
+        power = power + 1
+        toughness = toughness + 1
+        if equipment == UnitEnums.Equipment.HEAVY:
+            damage = damage + 1
+        return power, toughness, damage
 
-    def level_down(self) -> None:
-        self.attack = self.attack - 1
-        self.defense = self.defense - 1
-        self.morale = self.morale - 1
-        self.command = self.command - 2
-        if self.experience == Unit.Experience.ELITE:
-            self.attacks = self.attacks - 1
-        super().level_down()
-
-    def upgrade(self) -> None:
-        """Upgrade a unit's equipment bonuses. This is usually done by spending gold.
-        Throws a CannotUpgradeError if trying to upgrade past Super Heavy equipment."""
-        self.power = self.power + 1
-        self.toughness = self.toughness + 1
-        if self.equipment == Unit.Equipment.HEAVY:
-            self.damage = self.damage + 1
-        super().upgrade()
-
-    def downgrade(self) -> None:
-        """Downgrade a unit's equipment bonuses. This is usualy the 'undo' function for upgrading.
-        Throws a CannotUpgradeError if trying to downgrade past Light equipment."""
-        self.power = self.power - 1
-        self.toughness = self.toughness - 1
-        if self.equipment == Unit.Equipment.SUPER_HEAVY:
-            self.damage = self.damage - 1
-        super().downgrade()
+    def downgrade(equipment: UnitEnums.Equipment, power: int, toughness: int, damage: int) -> tuple[int, int, int]:
+        """Downgrade a unit's equipment bonuses. This is usualy the 'undo' function for upgrading."""
+        power = power - 1
+        toughness = toughness - 1
+        if equipment == UnitEnums.Equipment.SUPER_HEAVY:
+            damage = damage - 1
+        return power, toughness, damage

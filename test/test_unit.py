@@ -5,6 +5,7 @@ import pytest
 
 from ..KingdomsAndWarfare.Traits.Trait import Trait
 from ..KingdomsAndWarfare.Units.Artillery import Artillery
+from ..KingdomsAndWarfare.Units.Aerial import Aerial
 from ..KingdomsAndWarfare.Units.Cavalry import Cavalry
 from ..KingdomsAndWarfare.Units.Infantry import Infantry
 from ..KingdomsAndWarfare.Units.Unit import CannotLevelUpError
@@ -14,6 +15,7 @@ from ..KingdomsAndWarfare.Units.UnitFactory import parse_equipment
 from ..KingdomsAndWarfare.Units.UnitFactory import parse_experience
 from ..KingdomsAndWarfare.Units.UnitFactory import parse_type
 from ..KingdomsAndWarfare.Units.UnitFactory import unit_from_dict
+from ..KingdomsAndWarfare.Units import UnitEnums
 
 
 # testing the unit class, not to be confused with unit tests...
@@ -21,7 +23,7 @@ from ..KingdomsAndWarfare.Units.UnitFactory import unit_from_dict
 def test_unit():
     unit_name = "Splonks Infantry"
     unit_description = "Splonks with swords, mostly."
-    splonks = Unit(unit_name, unit_description)
+    splonks = Unit(unit_name, Infantry, unit_description)
 
     assert splonks.name == unit_name
     assert splonks.description == unit_description
@@ -33,142 +35,144 @@ def test_unit():
 
 
 def test_levelup():
-    splonks = Unit("Splonks Infantry", "Splonks with knives.")
+    splonks = Unit("Splonks Infantry", Infantry, "Splonks with knives.")
     assert splonks.battles == 0
-    assert splonks.experience == Unit.Experience.REGULAR
+    assert splonks.experience == UnitEnums.Experience.REGULAR
     splonks.battle()
     assert splonks.battles == 1
-    assert splonks.experience == Unit.Experience.VETERAN
+    assert splonks.experience == UnitEnums.Experience.VETERAN
     splonks.battle()
     splonks.battle()
     splonks.battle()
     assert splonks.battles == 4
-    assert splonks.experience == Unit.Experience.ELITE
+    assert splonks.experience == UnitEnums.Experience.ELITE
     for index in range(4):
         splonks.battle()
     assert splonks.battles == 8
-    assert splonks.experience == Unit.Experience.SUPER_ELITE
+    assert splonks.experience == UnitEnums.Experience.SUPER_ELITE
     with pytest.raises(CannotLevelUpError):
         splonks.level_up()
 
 
 def test_level_up_undo():
     units = [
-        Infantry("Goldfish Infantry", "Goldfish with lightsabers"),
-        Artillery("Gunslingers", "Slingers who throw guns"),
-        Cavalry("Rhino Cavalry", "Rhinos riding very large horses"),
+        Unit("Goldfish Infantry", Infantry, "Goldfish with lightsabers"),
+        Unit("Gunslingers", Artillery, "Slingers who throw guns"),
+        Unit("Rhino Cavalry", Cavalry, "Rhinos riding very large horses"),
     ]
     for unit in units:
-        assert unit.experience == Unit.Experience.REGULAR
+        assert unit.experience == UnitEnums.Experience.REGULAR
         my_clone = deepcopy(unit)
         unit.level_up()
         unit.level_up()
         unit.level_up()
-        assert unit.experience == Unit.Experience.SUPER_ELITE
+        assert unit.experience == UnitEnums.Experience.SUPER_ELITE
         unit.level_down()
         unit.level_down()
         unit.level_down()
-        assert unit.experience == Unit.Experience.REGULAR
+        assert unit.experience == UnitEnums.Experience.REGULAR
         assert my_clone == unit
 
 
 def test_level_up_undo():
     units = [
-        Infantry("Goldfish Infantry", "Goldfish with lightsabers"),
-        Artillery("Gunslingers", "Slingers who throw guns"),
-        Cavalry("Rhino Cavalry", "Rhinos riding very large horses"),
+        Unit("Goldfish Infantry", Infantry, "Goldfish with lightsabers"),
+        Unit("Gunslingers", Artillery, "Slingers who throw guns"),
+        Unit("Rhino Cavalry", Cavalry, "Rhinos riding very large horses"),
     ]
     for unit in units:
-        assert unit.experience == Unit.Experience.REGULAR
+        assert unit.experience == UnitEnums.Experience.REGULAR
         my_clone = deepcopy(unit)
         unit.level_up()
         unit.level_up()
         unit.level_up()
-        assert unit.experience == Unit.Experience.SUPER_ELITE
+        assert unit.experience == UnitEnums.Experience.SUPER_ELITE
         unit.level_down()
         unit.level_down()
         unit.level_down()
-        assert unit.experience == Unit.Experience.REGULAR
+        assert unit.experience == UnitEnums.Experience.REGULAR
         assert my_clone == unit
 
 
 def test_levelup_levies():
-    splonks = Unit("Splonks levies", "Splonk levies use pumpkins as balaclavas.")
-    splonks.experience = Unit.Experience.LEVIES
+    splonks = Unit("Splonks levies", Infantry, "Splonk levies use pumpkins as balaclavas.")
+    splonks.experience = UnitEnums.Experience.LEVIES
     with pytest.raises(CannotLevelUpError):
         splonks.level_up()
 
 
 def test_upgrade_infantry():
-    infantry = Unit("Splonks Infantry", "Splonkitude")
-    assert infantry.equipment == Unit.Equipment.LIGHT
+    infantry = Unit("Splonks Infantry", Infantry, "Splonkitude")
+    assert infantry.equipment == UnitEnums.Equipment.LIGHT
     infantry.upgrade()
-    assert infantry.equipment == Unit.Equipment.MEDIUM
+    assert infantry.equipment == UnitEnums.Equipment.MEDIUM
     infantry.upgrade()
-    assert infantry.equipment == Unit.Equipment.HEAVY
+    assert infantry.equipment == UnitEnums.Equipment.HEAVY
     infantry.upgrade()
-    assert infantry.equipment == Unit.Equipment.SUPER_HEAVY
+    assert infantry.equipment == UnitEnums.Equipment.SUPER_HEAVY
     with pytest.raises(CannotUpgradeError):
         infantry.upgrade()
 
 
 def test_upgrade_undo():
     units = [
-        Infantry("Creepy Puppets", "Puppets on magical strings."),
-        Artillery("Fish People", "Fish people with squirtguns."),
-        Cavalry("Sand People", "Riding Speeder bikes."),
+        Unit("Creepy Puppets", Infantry, "Puppets on magical strings."),
+        Unit("Fish People", Artillery, "Fish people with squirtguns."),
+        Unit("Sand People", Cavalry, "Riding Speeder bikes."),
     ]
     for unit in units:
         my_clone = deepcopy(unit)
-        assert unit.equipment == Unit.Equipment.LIGHT
+        assert unit.equipment == UnitEnums.Equipment.LIGHT
         unit.upgrade()
         unit.upgrade()
         unit.upgrade()
-        assert unit.equipment == Unit.Equipment.SUPER_HEAVY
+        assert unit.equipment == UnitEnums.Equipment.SUPER_HEAVY
         unit.downgrade()
         unit.downgrade()
         unit.downgrade()
-        assert unit.equipment == Unit.Equipment.LIGHT
+        assert unit.equipment == UnitEnums.Equipment.LIGHT
         assert unit == my_clone
 
 
 def test_upgrade_undo():
     units = [
-        Infantry("Creepy Puppets", "Puppets on magical strings."),
-        Artillery("Fish People", "Fish people with squirtguns."),
-        Cavalry("Sand People", "Riding Speeder bikes."),
+        Unit("Creepy Puppets", Infantry, "Puppets on magical strings."),
+        Unit("Fish People", Artillery, "Fish people with squirtguns."),
+        Unit("Sand People", Cavalry, "Riding Speeder bikes."),
     ]
     for unit in units:
         my_clone = deepcopy(unit)
-        assert unit.equipment == Unit.Equipment.LIGHT
+        assert unit.equipment == UnitEnums.Equipment.LIGHT
         unit.upgrade()
         unit.upgrade()
         unit.upgrade()
-        assert unit.equipment == Unit.Equipment.SUPER_HEAVY
+        assert unit.equipment == UnitEnums.Equipment.SUPER_HEAVY
         unit.downgrade()
         unit.downgrade()
         unit.downgrade()
-        assert unit.equipment == Unit.Equipment.LIGHT
+        assert unit.equipment == UnitEnums.Equipment.LIGHT
         assert unit == my_clone
 
 
 def test_upgrade_levies():
-    levies = Unit("Splonks Levies", "Cucumbers")
-    levies.experience = Unit.Experience.LEVIES
+    levies = Unit("Splonks Levies", Infantry, "Cucumbers")
+    levies.experience = UnitEnums.Experience.LEVIES
     with pytest.raises(CannotUpgradeError):
         levies.upgrade()
 
 
 def test_typical_use():
-    catapult = Infantry("Catapult", "Cats with heavy pulitzer prize trophies.")
+    catapult = Unit("Catapult", Infantry, "Cats with heavy pulitzer prize trophies.")
     seige_weapon = Trait("Seige Weapon", "These cats will lay seige until given pets.")
     assert catapult.attacks == 1
     assert catapult.attack == 0
     assert catapult.defense == 10
+    assert catapult.power == 0
+    assert catapult.toughness == 10
     assert catapult.morale == 0
     assert catapult.command == 0
-    assert catapult.experience == Unit.Experience.REGULAR
-    assert catapult.equipment == Unit.Equipment.LIGHT
+    assert catapult.experience == UnitEnums.Experience.REGULAR
+    assert catapult.equipment == UnitEnums.Equipment.LIGHT
     catapult.add_trait(seige_weapon)
     clone = deepcopy(catapult)
     catapult.upgrade()
@@ -176,23 +180,31 @@ def test_typical_use():
     assert catapult.attacks == 1
     assert catapult.attack == 1
     assert catapult.defense == 12
+    assert catapult.power == 2
+    assert catapult.toughness == 12
+    assert catapult.morale == 2
     assert catapult.command == 1
-    assert catapult.experience == Unit.Experience.VETERAN
-    assert catapult.equipment == Unit.Equipment.MEDIUM
+    assert catapult.experience == UnitEnums.Experience.VETERAN
+    assert catapult.equipment == UnitEnums.Equipment.MEDIUM
     saved = catapult.to_dict()
     loaded = unit_from_dict(saved)
     assert loaded.attacks == 1
     assert loaded.attack == 1
     assert loaded.defense == 12
+    assert loaded.power == 2
+    assert loaded.toughness == 12
+    assert loaded.morale == 2
     assert loaded.command == 1
-    assert loaded.experience == Unit.Experience.VETERAN
-    assert loaded.equipment == Unit.Equipment.MEDIUM
+    assert loaded.experience == UnitEnums.Experience.VETERAN
+    assert loaded.equipment == UnitEnums.Equipment.MEDIUM
     loaded.upgrade()
     loaded.level_up()
     # infantry leveled up twice to elite, heavy
     assert loaded.attacks == 2
     assert loaded.attack == 2
     assert loaded.defense == 14
+    assert loaded.power == 4
+    assert loaded.toughness == 14
     assert loaded.morale == 4
     assert loaded.command == 1
     loaded.level_down()
@@ -203,48 +215,40 @@ def test_typical_use():
 
 
 def test_parse_type():
-    assert parse_type("infantry") == Unit.Type.INFANTRY
-    assert parse_type("cavalry") == Unit.Type.CAVALRY
-    assert parse_type("artillery") == Unit.Type.ARTILLERY
-    assert parse_type("aerial") == Unit.Type.AERIAL
-    assert parse_type("TYPE.INFANTRY") == Unit.Type.INFANTRY
-    assert parse_type("TYPE.CAVALRY") == Unit.Type.CAVALRY
-    assert parse_type("TYPE.ARTILLERY") == Unit.Type.ARTILLERY
-    assert parse_type("TYPE.AERIAL") == Unit.Type.AERIAL
-    assert parse_type("1") == Unit.Type.INFANTRY
-    assert parse_type("2") == Unit.Type.ARTILLERY
-    assert parse_type("3") == Unit.Type.CAVALRY
-    assert parse_type("4") == Unit.Type.AERIAL
+    assert parse_type(Infantry.__qualname__) == Infantry
+    assert parse_type(Cavalry.__qualname__) == Cavalry
+    assert parse_type(Artillery.__qualname__) == Artillery
+    assert parse_type(Aerial.__qualname__) == Aerial
 
 
 def test_parse_equipment():
-    assert parse_equipment("light") == Unit.Equipment.LIGHT
-    assert parse_equipment("medium") == Unit.Equipment.MEDIUM
-    assert parse_equipment("heavy") == Unit.Equipment.HEAVY
-    assert parse_equipment("super_heavy") == Unit.Equipment.SUPER_HEAVY
-    assert parse_equipment("EQUIPMENT.LIGHT") == Unit.Equipment.LIGHT
-    assert parse_equipment("EQUIPMENT.MEDIUM") == Unit.Equipment.MEDIUM
-    assert parse_equipment("EQUIPMENT.HEAVY") == Unit.Equipment.HEAVY
-    assert parse_equipment("EQUIPMENT.SUPER_HEAVY") == Unit.Equipment.SUPER_HEAVY
-    assert parse_equipment("1") == Unit.Equipment.LIGHT
-    assert parse_equipment("2") == Unit.Equipment.MEDIUM
-    assert parse_equipment("3") == Unit.Equipment.HEAVY
-    assert parse_equipment("4") == Unit.Equipment.SUPER_HEAVY
+    assert parse_equipment("light") == UnitEnums.Equipment.LIGHT
+    assert parse_equipment("medium") == UnitEnums.Equipment.MEDIUM
+    assert parse_equipment("heavy") == UnitEnums.Equipment.HEAVY
+    assert parse_equipment("super_heavy") == UnitEnums.Equipment.SUPER_HEAVY
+    assert parse_equipment("EQUIPMENT.LIGHT") == UnitEnums.Equipment.LIGHT
+    assert parse_equipment("EQUIPMENT.MEDIUM") == UnitEnums.Equipment.MEDIUM
+    assert parse_equipment("EQUIPMENT.HEAVY") == UnitEnums.Equipment.HEAVY
+    assert parse_equipment("EQUIPMENT.SUPER_HEAVY") == UnitEnums.Equipment.SUPER_HEAVY
+    assert parse_equipment("1") == UnitEnums.Equipment.LIGHT
+    assert parse_equipment("2") == UnitEnums.Equipment.MEDIUM
+    assert parse_equipment("3") == UnitEnums.Equipment.HEAVY
+    assert parse_equipment("4") == UnitEnums.Equipment.SUPER_HEAVY
 
 
 def test_parse_experience():
-    assert parse_experience("regular") == Unit.Experience.REGULAR
-    assert parse_experience("veteran") == Unit.Experience.VETERAN
-    assert parse_experience("elite") == Unit.Experience.ELITE
-    assert parse_experience("super_elite") == Unit.Experience.SUPER_ELITE
-    assert parse_experience("levies") == Unit.Experience.LEVIES
-    assert parse_experience("EXPERIENCE.REGULAR") == Unit.Experience.REGULAR
-    assert parse_experience("EXPERIENCE.VETERAN") == Unit.Experience.VETERAN
-    assert parse_experience("EXPERIENCE.ELITE") == Unit.Experience.ELITE
-    assert parse_experience("EXPERIENCE.SUPER_ELITE") == Unit.Experience.SUPER_ELITE
-    assert parse_experience("EXPERIENCE.LEVIES") == Unit.Experience.LEVIES
-    assert parse_experience("1") == Unit.Experience.LEVIES
-    assert parse_experience("2") == Unit.Experience.REGULAR
-    assert parse_experience("3") == Unit.Experience.VETERAN
-    assert parse_experience("4") == Unit.Experience.ELITE
-    assert parse_experience("5") == Unit.Experience.SUPER_ELITE
+    assert parse_experience("regular") == UnitEnums.Experience.REGULAR
+    assert parse_experience("veteran") == UnitEnums.Experience.VETERAN
+    assert parse_experience("elite") == UnitEnums.Experience.ELITE
+    assert parse_experience("super_elite") == UnitEnums.Experience.SUPER_ELITE
+    assert parse_experience("levies") == UnitEnums.Experience.LEVIES
+    assert parse_experience("EXPERIENCE.REGULAR") == UnitEnums.Experience.REGULAR
+    assert parse_experience("EXPERIENCE.VETERAN") == UnitEnums.Experience.VETERAN
+    assert parse_experience("EXPERIENCE.ELITE") == UnitEnums.Experience.ELITE
+    assert parse_experience("EXPERIENCE.SUPER_ELITE") == UnitEnums.Experience.SUPER_ELITE
+    assert parse_experience("EXPERIENCE.LEVIES") == UnitEnums.Experience.LEVIES
+    assert parse_experience("1") == UnitEnums.Experience.LEVIES
+    assert parse_experience("2") == UnitEnums.Experience.REGULAR
+    assert parse_experience("3") == UnitEnums.Experience.VETERAN
+    assert parse_experience("4") == UnitEnums.Experience.ELITE
+    assert parse_experience("5") == UnitEnums.Experience.SUPER_ELITE
