@@ -17,6 +17,7 @@ def unit_from_dict(new_unit_dict: dict) -> "Unit":
     new_description = new_unit_dict["description"]
     new_unit = Unit(new_name, new_type, new_description)
     new_unit.battles = int(new_unit_dict["battles"])
+    new_unit.casualties = int(new_unit_dict["casualties"])
     new_unit.traits = []
     for trait_dict in new_unit_dict["traits"]:
         new_unit.traits.append(Trait.from_dict(trait_dict))
@@ -33,6 +34,32 @@ def unit_from_dict(new_unit_dict: dict) -> "Unit":
     new_unit.damage = int(new_unit_dict["damage"])
     new_unit.attacks = int(new_unit_dict["attacks"])
     new_unit.ancestry = new_unit_dict["ancestry"]
+    return new_unit
+
+def clone_unit(unit_to_clone: Unit) -> Unit:
+    new_unit = None
+    new_type = unit_to_clone.unit_type
+    new_name = unit_to_clone.name
+    new_description = unit_to_clone.description
+    new_unit = Unit(new_name, new_type, new_description)
+    new_unit.battles = int(unit_to_clone.battles)
+    new_unit.casualties = unit_to_clone.casualties
+    new_unit.traits = []
+    for new_trait in unit_to_clone.traits:
+        new_unit.traits.append(new_trait)
+    new_unit.experience = unit_to_clone.experience
+    new_unit.equipment = unit_to_clone.equipment
+    new_unit.tier = unit_to_clone.tier
+    new_unit.attack = int(unit_to_clone.attack)
+    new_unit.defense = int(unit_to_clone.defense)
+    new_unit.size = int(unit_to_clone.size)
+    new_unit.power = int(unit_to_clone.power)
+    new_unit.toughness = int(unit_to_clone.toughness)
+    new_unit.morale = int(unit_to_clone.morale)
+    new_unit.command = int(unit_to_clone.command)
+    new_unit.damage = int(unit_to_clone.damage)
+    new_unit.attacks = int(unit_to_clone.attacks)
+    new_unit.ancestry = unit_to_clone.ancestry
     return new_unit
 
 

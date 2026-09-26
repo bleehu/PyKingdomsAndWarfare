@@ -21,6 +21,10 @@ splonks.attack(target, randint(1,20), randint(1,20))
 `pip install KingdomsAndWarfare`
 https://pypi.org/project/KingdomsAndWarfare/
 
+## Test on windows
+
+`winpty pipenv run pytest --cov=./` from the root directory
+
 ## Build and publish
 
 `python -m build`
