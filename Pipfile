@@ -15,4 +15,4 @@ twine = "*"
 pytest-cov = "*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.14"
