@@ -25,7 +25,7 @@ class Unit:
                  toughness: int = 10,
                  morale: int = 0,
                  command: int = 0,
-                 traits: list[str] = []):
+                 traits: list[Trait] = []):
         self.name = name
         self.unit_type = unit_type
         self.description = description

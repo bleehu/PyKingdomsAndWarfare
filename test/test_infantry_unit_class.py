@@ -65,3 +65,53 @@ def test_infantry_upgrade():
     assert test_infantry.power == 6
     assert test_infantry.toughness == 16
     assert test_infantry.damage == 2
+
+
+def test_infantry_level_down():
+    teddy_bear_infantry = Unit("Teddy Bear Infantry", Infantry, "Teddy Bears with Toy Swords",
+                               experience=UnitEnums.Experience.SUPER_ELITE,
+                               attacks=2, attack=3, defense=16, morale=6, command=2)
+    teddy_bear_infantry.level_down()
+    # assert stats were changed by level down correctly
+    # magic numbers provided by table from MCDM K&W page 99
+    assert teddy_bear_infantry.attacks == 2
+    assert teddy_bear_infantry.attack == 2
+    assert teddy_bear_infantry.defense == 14
+    assert teddy_bear_infantry.morale == 4
+    assert teddy_bear_infantry.command == 1
+    assert teddy_bear_infantry.experience == UnitEnums.Experience.ELITE
+    teddy_bear_infantry.level_down()
+    assert teddy_bear_infantry.attacks == 1
+    assert teddy_bear_infantry.attack == 1
+    assert teddy_bear_infantry.defense == 12
+    assert teddy_bear_infantry.morale == 2
+    assert teddy_bear_infantry.command == 1
+    assert teddy_bear_infantry.experience == UnitEnums.Experience.VETERAN
+    teddy_bear_infantry.level_down()
+    assert teddy_bear_infantry.attacks == 1
+    assert teddy_bear_infantry.attack == 0
+    assert teddy_bear_infantry.defense == 10
+    assert teddy_bear_infantry.morale == 0
+    assert teddy_bear_infantry.command == 0
+    assert teddy_bear_infantry.experience == UnitEnums.Experience.REGULAR
+
+
+def test_infantry_downgrade():
+    test_infantry = Unit("Test", Infantry, "Armed with personality tests.",
+                         equipment=UnitEnums.Equipment.SUPER_HEAVY,
+                         power=6, toughness=16, damage=2)
+    test_infantry.downgrade()
+    assert test_infantry.equipment == UnitEnums.Equipment.HEAVY
+    assert test_infantry.power == 4
+    assert test_infantry.toughness == 14
+    assert test_infantry.damage == 1
+    test_infantry.downgrade()
+    assert test_infantry.equipment == UnitEnums.Equipment.MEDIUM
+    assert test_infantry.power == 2
+    assert test_infantry.toughness == 12
+    assert test_infantry.damage == 1
+    test_infantry.downgrade()
+    assert test_infantry.equipment == UnitEnums.Equipment.LIGHT
+    assert test_infantry.power == 0
+    assert test_infantry.toughness == 10
+    assert test_infantry.damage == 1
