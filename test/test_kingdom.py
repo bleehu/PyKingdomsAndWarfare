@@ -47,7 +47,7 @@ def test_add_transaction_overdraw():
         kingdom.add_transaction("Mercenaries", -6)
 
     # the rejected transaction is not recorded
-    assert len(kingdom.get_ledger()) == 1
+    assert len(kingdom.read_ledger()) == 1
     assert kingdom.get_treasury() == 5
 
     # spending exactly the full treasury is allowed
@@ -58,22 +58,22 @@ def test_add_transaction_overdraw():
         kingdom.add_transaction("Bribes", -1)
     assert kingdom.get_treasury() == 0
     #transactions that fail due to overdraft don't modify the ledger; they're idempotent
-    assert len(kingdom.get_ledger()) == 2
+    assert len(kingdom.read_ledger()) == 2
 
 
-def test_get_ledger_empty():
+def test_read_ledger_empty():
     kingdom = Kingdom("kingdomName", "blah.")
 
-    assert kingdom.get_ledger() == []
+    assert kingdom.read_ledger() == []
 
 
-def test_get_ledger():
+def test_read_ledger():
     kingdom = Kingdom("kingdomName", "blah.")
-    assert kingdom.get_ledger() == []
+    assert kingdom.read_ledger() == []
     kingdom.add_transaction("Taxes", 5)
     kingdom.add_transaction("Mercenaries", -3)
 
-    ledger = kingdom.get_ledger()
+    ledger = kingdom.read_ledger()
 
     assert [(entry.description, entry.change) for entry in ledger] == [
         ("Taxes", 5),
@@ -81,14 +81,14 @@ def test_get_ledger():
     ]
 
 
-def test_get_ledger_returns_copy():
+def test_read_ledger_returns_copy():
     kingdom = Kingdom("kingdomName", "blah.")
     kingdom.add_transaction("Taxes", 5)
 
-    ledger = kingdom.get_ledger()
+    ledger = kingdom.read_ledger()
     ledger.clear()
 
-    assert len(kingdom.get_ledger()) == 1
+    assert len(kingdom.read_ledger()) == 1
 
 
 def test_typicalArmyUse():
@@ -120,14 +120,14 @@ def test_research_unit():
 
     assert kingdom.recruitableUnitTypes == {research_id: machinegun_muppets}
     assert kingdom.get_treasury() == 6
-    assert kingdom.get_ledger()[-1].description == "Researched Machinegun Muppets."
-    assert kingdom.get_ledger()[-1].change == -4
+    assert kingdom.read_ledger()[-1].description == "Researched Machinegun Muppets."
+    assert kingdom.read_ledger()[-1].change == -4
 
     # free research doesn't add a ledger entry, and each research gets a unique id
     second_id = kingdom.research_unit(machinegun_muppets, 0)
     assert second_id != research_id
     assert len(kingdom.recruitableUnitTypes) == 2
-    assert len(kingdom.get_ledger()) == 2
+    assert len(kingdom.read_ledger()) == 2
 
 
 def test_research_unit_errors():
@@ -152,7 +152,7 @@ def test_forget_unit_research():
 
     assert kingdom.recruitableUnitTypes == {}
     assert kingdom.get_treasury() == 9
-    assert kingdom.get_ledger()[-1].change == 3
+    assert kingdom.read_ledger()[-1].change == 3
 
     # forgetting research twice is an error
     with pytest.raises(Kingdom.UnitNotFoundError):
@@ -171,7 +171,7 @@ def test_muster_unit():
     assert first_army_id != second_army_id
     assert len(kingdom.armies) == 2
     assert kingdom.get_treasury() == 4
-    assert kingdom.get_ledger()[-1].description == "Mustered a unit of Machinegun Muppets."
+    assert kingdom.read_ledger()[-1].description == "Mustered a unit of Machinegun Muppets."
     # each mustered army is a separate copy of the researched unit
     assert kingdom.armies[first_army_id] == machinegun_muppets
     assert kingdom.armies[first_army_id] is not machinegun_muppets

@@ -24,7 +24,7 @@ class Kingdom:
             raise self.TreasuryOverdrawError(f"Kingdom {self.name} Cannot afford transaction {description} for {goldAdded}. Current Balance: {self.get_treasury()} ")
         self.ledger.append(Kingdom.LedgerEntry(description, goldAdded))
 
-    def get_ledger(self) -> list["Kingdom.LedgerEntry"]:
+    def read_ledger(self) -> list["Kingdom.LedgerEntry"]:
         return list(self.ledger)
 
     def get_treasury(self) -> int:
