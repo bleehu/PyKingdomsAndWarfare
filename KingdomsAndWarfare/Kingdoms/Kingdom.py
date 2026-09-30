@@ -50,12 +50,12 @@ class Kingdom:
             self.add_transaction(f"Refunded research of {forgotten_unit.name} for Kingdom {self.name}.", research_refund_gold)
         return True
 
-    def muster_unit(self, unit_research_to_muster_id: UUID, muster_cost_gold :int) -> UUID:
-        if unit_research_to_muster_id not in self.recruitableUnitTypes.keys():
-            raise self.UnitNotFoundError(f"Could not find unit in available units with ID to muster: {unit_research_to_muster_id}")
+    def muster_unit(self, unit_research_id: UUID, muster_cost_gold :int) -> UUID:
+        if unit_research_id not in self.recruitableUnitTypes.keys():
+            raise self.UnitNotFoundError(f"Could not find unit in available units with ID to muster: {unit_research_id}")
         if muster_cost_gold < 0:
             raise ValueError(f"Cannot pay a kingdom {self.name} to raise armies; potential infinite money glitch.")
-        new_unit_type = self.recruitableUnitTypes[unit_research_to_muster_id]
+        new_unit_type = self.recruitableUnitTypes[unit_research_id]
         self.add_transaction(f"Mustered a unit of {new_unit_type.name}.", -muster_cost_gold)
         new_unit = clone_unit(new_unit_type)
         new_unit_id = uuid4()
