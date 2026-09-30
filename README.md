@@ -23,7 +23,7 @@ https://pypi.org/project/KingdomsAndWarfare/
 
 ## Test on windows
 
-`winpty pipenv run pytest --cov=./` from the root directory
+`pipenv run pytest --cov=./` from the root directory
 
 ## Build and publish
 
