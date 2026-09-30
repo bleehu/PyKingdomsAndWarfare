@@ -37,7 +37,6 @@ def unit_from_dict(new_unit_dict: dict) -> "Unit":
     return new_unit
 
 def clone_unit(unit_to_clone: Unit) -> Unit:
-    new_unit = None
     new_type = unit_to_clone.unit_type
     new_name = unit_to_clone.name
     new_description = unit_to_clone.description

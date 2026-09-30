@@ -163,7 +163,7 @@ def test_upgrade_levies():
 
 def test_typical_use():
     catapult = Unit("Catapult", Infantry, "Cats with heavy pulitzer prize trophies.")
-    seige_weapon = Trait("Seige Weapon", "These cats will lay seige until given pets.")
+    siege_weapon = Trait("Siege Weapon", "These cats will lay siege until given pets.")
     assert catapult.attacks == 1
     assert catapult.attack == 0
     assert catapult.defense == 10
@@ -173,7 +173,7 @@ def test_typical_use():
     assert catapult.command == 0
     assert catapult.experience == UnitEnums.Experience.REGULAR
     assert catapult.equipment == UnitEnums.Equipment.LIGHT
-    catapult.add_trait(seige_weapon)
+    catapult.add_trait(siege_weapon)
     clone = deepcopy(catapult)
     catapult.upgrade()
     catapult.level_up()

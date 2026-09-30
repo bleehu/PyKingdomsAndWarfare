@@ -15,7 +15,7 @@ def test_artillery():
 
 
 def test_artillery_level_up():
-    teddy_bear_artillery = Unit("Teddy Bear artillery", Artillery, "Teddy Bears with Toy Swords")
+    teddy_bear_artillery = Unit("Teddy Bear artillery", Artillery, "Teddy Bears with nerf guns.")
     teddy_bear_artillery.attack = 0
     teddy_bear_artillery.defense = 10
     teddy_bear_artillery.morale = 0
@@ -63,3 +63,53 @@ def test_artillery_upgrade():
     assert test_artillery.equipment == UnitEnums.Equipment.SUPER_HEAVY
     assert test_artillery.power == 3
     assert test_artillery.toughness == 13
+
+
+def test_artillery_level_down():
+    cory_artillery = Unit("Cory Doctorow's Raygun Brigade", Artillery, "Nerds whose sci-fi shooters keep getting enshitified over time.",
+                                experience=UnitEnums.Experience.SUPER_ELITE,
+                                attacks=2, attack=6, defense=13, morale=3, command=3)
+    cory_artillery.level_down()
+    # assert stats were changed by level down correctly
+    # magic numbers provided by table from MCDM K&W page 99
+    assert cory_artillery.attacks == 2
+    assert cory_artillery.attack == 4
+    assert cory_artillery.defense == 12
+    assert cory_artillery.morale == 2
+    assert cory_artillery.command == 2
+    assert cory_artillery.experience == UnitEnums.Experience.ELITE
+    cory_artillery.level_down()
+    assert cory_artillery.attacks == 2
+    assert cory_artillery.attack == 2
+    assert cory_artillery.defense == 11
+    assert cory_artillery.morale == 1
+    assert cory_artillery.command == 1
+    assert cory_artillery.experience == UnitEnums.Experience.VETERAN
+    cory_artillery.level_down()
+    assert cory_artillery.attacks == 1
+    assert cory_artillery.attack == 0
+    assert cory_artillery.defense == 10
+    assert cory_artillery.morale == 0
+    assert cory_artillery.command == 0
+    assert cory_artillery.experience == UnitEnums.Experience.REGULAR
+
+
+def test_artillery_downgrade():
+    test_artillery = Unit("Art Tillery", Artillery, "Over-caffienated painters throwing paintings of tilled earth.",
+                          equipment=UnitEnums.Equipment.SUPER_HEAVY,
+                          power=3, toughness=13, damage=1)
+    test_artillery.downgrade()
+    assert test_artillery.equipment == UnitEnums.Equipment.HEAVY
+    assert test_artillery.power == 2
+    assert test_artillery.toughness == 12
+    assert test_artillery.damage == 1
+    test_artillery.downgrade()
+    assert test_artillery.equipment == UnitEnums.Equipment.MEDIUM
+    assert test_artillery.power == 1
+    assert test_artillery.toughness == 11
+    assert test_artillery.damage == 1
+    test_artillery.downgrade()
+    assert test_artillery.equipment == UnitEnums.Equipment.LIGHT
+    assert test_artillery.power == 0
+    assert test_artillery.toughness == 10
+    assert test_artillery.damage == 1
