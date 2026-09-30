@@ -1,3 +1,5 @@
+"""The Unit class: a single military unit card, its stats, and how those stats change."""
+
 from pdb import set_trace
 from warnings import warn
 from typing import Self
@@ -8,6 +10,34 @@ from .UnitType import UnitType
 from ..Traits import Trait
 
 class Unit:
+    """A military unit card: its identity, stats, experience, equipment, and traits.
+
+    Stat changes from leveling and equipment upgrades are delegated to the
+    unit's `unit_type` (Infantry, Cavalry, Artillery, or Aerial).
+
+    Attributes:
+        name: Display name of the unit.
+        unit_type: The UnitType class that decides how this unit's stats grow.
+        description: Flavor text for the unit.
+        ancestry: The unit's ancestry, e.g. "Human" or "Dwarf".
+        experience: Current experience level.
+        equipment: Current equipment level.
+        tier: Power tier of the unit.
+        battles: Number of battles the unit has fought.
+        size: Full strength of the unit.
+        casualties: Remaining strength. Starts equal to `size` and goes
+            down as the unit takes hits.
+        attacks: Number of attacks the unit makes each turn.
+        damage: Extra casualties dealt when an attack also passes its power test.
+        attack: Bonus added to attack rolls.
+        defense: Target number enemies must meet to hit this unit.
+        power: Bonus added to power rolls.
+        toughness: Target number enemy power rolls must meet to deal extra damage.
+        morale: Bonus to morale tests.
+        command: Bonus to command tests.
+        traits: Special abilities or weaknesses attached to the unit.
+    """
+
     def __init__(self, 
                  name: str, 
                  unit_type: type[UnitType],
@@ -26,6 +56,31 @@ class Unit:
                  morale: int = 0,
                  command: int = 0,
                  traits: list[Trait] = []):
+        """Create a unit at full strength.
+
+        Only `name` and `unit_type` are required. Every other stat defaults to
+        a baseline Tier I, Regular, Light-equipment unit of size 6. `battles`
+        is set to match the starting experience.
+
+        Args:
+            name: Display name of the unit.
+            unit_type: The UnitType class, e.g. `Infantry`. Pass the class itself, not an instance.
+            description: Flavor text for the unit.
+            ancestry: The unit's ancestry.
+            experience: Starting experience level.
+            equipment: Starting equipment level.
+            tier: Power tier of the unit.
+            size: Full strength. The unit starts with no losses.
+            attacks: Number of attacks per turn.
+            damage: Extra casualties dealt on a successful power test.
+            attack: Bonus to attack rolls.
+            defense: Target number enemies must meet to hit this unit.
+            power: Bonus to power rolls.
+            toughness: Target number enemy power rolls must meet.
+            morale: Bonus to morale tests.
+            command: Bonus to command tests.
+            traits: Traits to attach to the unit.
+        """
         self.name = name
         self.unit_type = unit_type
         self.description = description
@@ -47,6 +102,7 @@ class Unit:
         self.ancestry = ancestry
 
     def __eq__(self, __value: Self) -> bool:
+        """Return True if every stat, trait, and identifying field matches `__value`."""
         matches = (
             self.name == __value.name
             and self.ancestry == __value.ancestry
@@ -71,6 +127,7 @@ class Unit:
         return matches
 
     def __repr__(self) -> str:
+        """Return a one-line summary of the unit's stats, for debugging."""
         return f"{self.name}: [{self.experience}, {self.equipment}, {self.ancestry}, {self.unit_type}] \
             Tier: {self.tier}, \
                 ATK: {self.attack} DEF {self.defense} POW {self.power} TOU {self.toughness} \
@@ -78,22 +135,37 @@ class Unit:
                 at {self.damage} each. Traits: {self.traits}."
 
     def add_trait(self, trait: Trait) -> None:
-        """Adds a trait that gives a unit special abilities or weaknesses to the unit.
-        Throws an error if more than 4 traits are added."""
+        """Attach a trait to the unit.
+
+        Args:
+            trait: The special ability or weakness to add.
+
+        Raises:
+            Exception: If the unit already has five traits.
+        """
         if len(self.traits) < 5:
             self.traits.append(trait)
         else:
             raise Exception("This unit already has 4 traits!")
 
     def battle(self) -> None:
-        """Credits the unit with 1 battle experience and if it has enough experience to
-        level up, it does so."""
+        """Record one battle fought, leveling the unit up when it reaches a milestone.
+
+        A unit levels up on its 1st, 4th, and 8th battle, becoming Veteran,
+        Elite, and Super-elite. Levies gain battles but never level up.
+        """
         self.battles = self.battles + 1
         if self.experience != UnitEnums.Experience.LEVIES:
             if self.battles == 1 or self.battles == 4 or self.battles == 8:
                 self.level_up()
 
     def upgrade(self) -> None:
+        """Raise the unit's equipment one level and apply the matching stat bonuses.
+
+        Raises:
+            CannotUpgradeError: If the unit is Levies or already has
+                Super-heavy equipment.
+        """
         if self.experience == UnitEnums.Experience.LEVIES:
             raise CannotUpgradeError("Cannot upgrade Levies")
         if self.equipment == UnitEnums.Equipment.SUPER_HEAVY:
@@ -102,6 +174,14 @@ class Unit:
         self.equipment = UnitEnums.Equipment(self.equipment + 1)
 
     def downgrade(self) -> None:
+        """Lower the unit's equipment one level and remove the matching stat bonuses.
+
+        This is the undo for `upgrade`.
+
+        Raises:
+            CannotUpgradeError: If the unit is Levies or already has
+                Light equipment.
+        """
         if self.experience == UnitEnums.Experience.LEVIES:
             raise CannotUpgradeError("Cannot downgrade Levies")
         if self.equipment == UnitEnums.Equipment.LIGHT:
@@ -110,8 +190,13 @@ class Unit:
         self.equipment = UnitEnums.Equipment(self.equipment - 1)
 
     def level_up(self) -> None:
-        """Bumps the experience of the unit up one level. Throws an error if
-        you try to raise it above super-elite experience."""
+        """Raise the unit's experience one level and apply the matching stat bonuses.
+
+        `battles` is reset to the minimum count for the new experience level.
+
+        Raises:
+            CannotLevelUpError: If the unit is Levies or already Super-elite.
+        """
         if self.experience == UnitEnums.Experience.LEVIES:
             raise CannotLevelUpError("Cannot level up levies.")
         if self.experience == UnitEnums.Experience.SUPER_ELITE:
@@ -122,9 +207,14 @@ class Unit:
         self.battles = Unit.battles_from_xp(self.experience)
 
     def level_down(self) -> None:
-        """Reduces the experience of the unit one level. Usually as an 'undo' for
-        leveling up a unit. Throws an error if you try to reduce a unit's level
-        below Regular."""
+        """Lower the unit's experience one level and remove the matching stat bonuses.
+
+        This is the undo for `level_up`. `battles` is reset to the minimum
+        count for the new experience level.
+
+        Raises:
+            CannotLevelUpError: If the unit is Levies or already Regular.
+        """
         if self.experience == UnitEnums.Experience.LEVIES:
             raise CannotLevelUpError("Cannot level down levies.")
         if self.experience == UnitEnums.Experience.REGULAR:
@@ -135,7 +225,21 @@ class Unit:
         self.battles = Unit.battles_from_xp(self.experience)
 
     def attack_unit(self, target: "Unit", attack_roll: int, power_roll: int):
-        """attacking_unit.attack(target_unit, )"""
+        """Resolve one attack against `target`, reducing its remaining strength.
+
+        If `attack_roll + attack` meets the target's defense, the target loses
+        1. If `power_roll + power` then also meets the target's toughness, it
+        loses `damage` more. A miss does nothing. The caller supplies the
+        rolls, so dice can be real, simulated, or fixed for tests.
+
+        Args:
+            target: The unit being attacked.
+            attack_roll: The raw die result for the attack test.
+            power_roll: The raw die result for the power test.
+
+        Warns:
+            UserWarning: If a unit attacks itself (or an identical unit).
+        """
         if(self == target):
             warn(f"Unit {self.name} is attacking itself!")
         attack_score = attack_roll + self.attack
@@ -146,10 +250,16 @@ class Unit:
                 target.casualties = target.casualties - self.damage
     
     def get_diminished(self):
+        """Return True if the unit's remaining strength (`casualties`) is at least half its `size`."""
         return self.casualties * 2 >= self.size
 
 
     def to_dict(self) -> dict:
+        """Serialize the unit to a JSON-friendly dict.
+
+        Enums are stored by name, the unit type by its class name, and traits
+        as nested dicts. Use `UnitFactory.unit_from_dict` to read it back.
+        """
         to_return = {
             "name": self.name,
             "description": self.description,
@@ -176,6 +286,16 @@ class Unit:
         return to_return
 
     def battles_from_xp(experience: UnitEnums.Experience) -> int:
+        """Return the minimum number of battles a unit needs for an experience level.
+
+        Call this on the class: `Unit.battles_from_xp(experience)`.
+
+        Args:
+            experience: The experience level to look up.
+
+        Returns:
+            0 for Levies and Regular, 1 for Veteran, 4 for Elite, and 8 for Super-elite.
+        """
         if experience == UnitEnums.Experience.REGULAR or experience == UnitEnums.Experience.LEVIES:
             return 0
         elif experience == UnitEnums.Experience.VETERAN:
@@ -189,8 +309,10 @@ class Unit:
 
 
 class CannotUpgradeError(Exception):
+    """Raised when a unit's equipment cannot be raised or lowered any further."""
     pass
 
 
 class CannotLevelUpError(Exception):
+    """Raised when a unit's experience cannot be raised or lowered any further."""
     pass
