@@ -66,7 +66,7 @@ class Unit:
             ancestry: The unit's ancestry.
             experience: Starting experience level.
             equipment: Starting equipment level.
-            tier: Power tier of the unit.
+            tier: An Army must field certain number of lower-tier units before it can field high-tier units.
             size: Full strength. The unit starts with no losses.
             attacks: Number of attacks per turn.
             damage: Extra casualties dealt on a successful power test.
