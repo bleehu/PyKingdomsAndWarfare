@@ -1,3 +1,5 @@
+"""Functions for building units: loading from dicts, cloning, and parsing enum strings."""
+
 import pdb
 
 from ..Traits.Trait import Trait
@@ -11,6 +13,20 @@ from . import UnitEnums
 
 
 def unit_from_dict(new_unit_dict: dict) -> "Unit":
+    """Build a unit from a dict produced by `Unit.to_dict`.
+
+    Args:
+        new_unit_dict: A serialized unit, with every key `Unit.to_dict` writes.
+
+    Returns:
+        A new unit with the stored stats, experience, equipment, and traits.
+
+    Raises:
+        KeyError: If any expected key is missing.
+        NoSuchUnitTypeError: If "type" is not a known unit type.
+        NoSuchUnitExperienceError: If "experience" is not a valid experience level.
+        NoSuchUnitEquipmentError: If "equipment" is not a valid equipment level.
+    """
     new_unit = None
     new_type = parse_type(new_unit_dict["type"])
     new_name = new_unit_dict["name"]
@@ -37,6 +53,17 @@ def unit_from_dict(new_unit_dict: dict) -> "Unit":
     return new_unit
 
 def clone_unit(unit_to_clone: Unit) -> Unit:
+    """Return a copy of a unit that equals the original but can be changed on its own.
+
+    The copy gets its own trait list, so adding or removing traits on one
+    unit does not affect the other. The `Trait` objects themselves are shared.
+
+    Args:
+        unit_to_clone: The unit to copy.
+
+    Returns:
+        A new unit with the same stats, experience, equipment, and traits.
+    """
     new_type = unit_to_clone.unit_type
     new_name = unit_to_clone.name
     new_description = unit_to_clone.description
@@ -63,6 +90,18 @@ def clone_unit(unit_to_clone: Unit) -> Unit:
 
 
 def parse_type(type_string: str) -> UnitType:
+    """Return the UnitType class whose name matches `type_string`.
+
+    Args:
+        type_string: A unit type class name: "Infantry", "Cavalry",
+            "Artillery", or "Aerial". Case-sensitive.
+
+    Returns:
+        The matching UnitType class, e.g. `Infantry`.
+
+    Raises:
+        NoSuchUnitTypeError: If the name does not match a known unit type.
+    """
     if type_string == Aerial.__qualname__:
         return Aerial
     elif type_string == Artillery.__qualname__:
@@ -79,6 +118,20 @@ def parse_type(type_string: str) -> UnitType:
 
 
 def parse_experience(experience_string: str) -> UnitEnums.Experience:
+    """Parse an experience level from a name or a single-digit number.
+
+    Accepts a number from "1" (Levies) to "5" (Super-elite), or a name such as
+    "veteran", "SUPER_ELITE", or "Experience.ELITE". Names are case-insensitive.
+
+    Args:
+        experience_string: The experience level to parse.
+
+    Returns:
+        The matching Experience.
+
+    Raises:
+        NoSuchUnitExperienceError: If the string is not a valid experience level.
+    """
     if len(experience_string) == 1:
         type_int = int(experience_string)
         if type_int < 1 or type_int > 5:
@@ -91,6 +144,20 @@ def parse_experience(experience_string: str) -> UnitEnums.Experience:
 
 
 def parse_equipment(equipment_string: str) -> UnitEnums.Equipment:
+    """Parse an equipment level from a name or a single-digit number.
+
+    Accepts a number from "1" (Light) to "4" (Super-heavy), or a name such as
+    "heavy", "SUPER_HEAVY", or "Equipment.LIGHT". Names are case-insensitive.
+
+    Args:
+        equipment_string: The equipment level to parse.
+
+    Returns:
+        The matching Equipment.
+
+    Raises:
+        NoSuchUnitEquipmentError: If the string is not a valid equipment level.
+    """
     if len(equipment_string) == 1:
         type_int = int(equipment_string)
         if type_int < 1 or type_int > 4:
@@ -103,16 +170,20 @@ def parse_equipment(equipment_string: str) -> UnitEnums.Equipment:
 
 
 class UnitError(Exception):
+    """Base class for errors raised while building a unit from data."""
     pass
 
 
 class NoSuchUnitTypeError(UnitError):
+    """Raised when a unit type name does not match any known UnitType."""
     pass
 
 
 class NoSuchUnitExperienceError(UnitError):
+    """Raised when a string cannot be parsed as an Experience level."""
     pass
 
 
 class NoSuchUnitEquipmentError(UnitError):
+    """Raised when a string cannot be parsed as an Equipment level."""
     pass
