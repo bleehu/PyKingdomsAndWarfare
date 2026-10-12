@@ -137,7 +137,7 @@ class Kingdom:
             The army ID of the new unit, for use with `disband_unit`.
 
         Raises:
-            Kingdom.UnitNotFoundError: If no research exists with that ID.
+            Kingdom.UnitNotFoundError: If this kingdom has no researched a unit template with that ID.
             ValueError: If `muster_cost_gold` is negative.
             Kingdom.TreasuryOverdrawError: If the kingdom cannot afford the unit.
         """
@@ -164,7 +164,7 @@ class Kingdom:
             True once the unit has been disbanded.
 
         Raises:
-            Kingdom.UnitNotFoundError: If no army exists with that ID.
+            Kingdom.UnitNotFoundError: If no army exists in this kingdom with that ID.
         """
         if army_id not in self.armies.keys():
             raise self.UnitNotFoundError(f"Could not find army with ID {army_id} in {self.name}'s mustered armies to disband. Already disbanded?")
