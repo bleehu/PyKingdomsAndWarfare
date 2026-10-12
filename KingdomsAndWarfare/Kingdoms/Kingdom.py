@@ -17,7 +17,7 @@ class Kingdom:
     Attributes:
         name: Display name of the kingdom.
         description: Flavor text describing the kingdom.
-        recruitableUnitTypes: Researched unit prefabrications, keyed by research UUID.
+        recruitableUnitTypes: Researched unit templates from which specific armies can be mustered, keyed by research UUID.
         armies: Mustered units, keyed by army ID. These should be named instances of a unit type.
         diplomacy: Diplomacy skill bonus.
         espionage: Espionage skill bonus.
@@ -58,7 +58,7 @@ class Kingdom:
 
         Raises:
             Kingdom.TreasuryOverdrawError: If the transaction would leave the
-                treasury below zero. Nothing is recorded in that case.
+                treasury below zero. The ledger is not modified when this exception is raised.
         """
         if self.get_treasury() + goldAdded < 0:
             raise self.TreasuryOverdrawError(f"Kingdom {self.name} Cannot afford transaction {description} for {goldAdded}. Current Balance: {self.get_treasury()} ")
@@ -72,7 +72,7 @@ class Kingdom:
         return list(self.ledger)
 
     def get_treasury(self) -> int:
-        """Return the kingdom's current gold balance, the sum of every ledger entry."""
+        """Return the kingdom's current gold balance; the sum of every ledger entry."""
         total = 0
         for transaction in self.ledger:
             total = total + transaction.change
@@ -114,7 +114,7 @@ class Kingdom:
             True once the research has been forgotten.
 
         Raises:
-            Kingdom.UnitNotFoundError: If no research exists with that ID.
+            Kingdom.UnitNotFoundError: If this kingdom has no researched a unit template with that ID.
         """
         if unit_research_id not in self.recruitableUnitTypes.keys():
             raise self.UnitNotFoundError(f"Could not find unit in available units with ID to forget research: {unit_research_id}")
@@ -157,7 +157,8 @@ class Kingdom:
         """Remove a mustered unit from the kingdom's armies. No gold is refunded.
 
         Args:
-            army_id: The ID returned by `muster_unit`.
+            army_id: The ID returned by `muster_unit` which can then be used to 
+            reference that specific unit from the Kingdom's armies dictionary.
 
         Returns:
             True once the unit has been disbanded.

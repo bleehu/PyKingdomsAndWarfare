@@ -6,8 +6,9 @@ from .UnitType import UnitType
 class Artillery(UnitType):
     """Siege engines and war machines. Level up with a focus on attack.
 
-    Each level: +2 attack, +1 defense, +1 morale, +1 command, and +1 attacks
-    on reaching Veteran. Each equipment level: +1 power and +1 toughness.
+    Each level: +2 attack, +1 defense, +1 morale, +1 command. 
+    Also +1 attacks on reaching Veteran. 
+    Each equipment level: +1 power and +1 toughness.
     Damage never changes with equipment.
     """
 

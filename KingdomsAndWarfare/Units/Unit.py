@@ -12,17 +12,14 @@ from ..Traits import Trait
 class Unit:
     """A military unit card: its identity, stats, experience, equipment, and traits.
 
-    Stat changes from leveling and equipment upgrades are delegated to the
-    unit's `unit_type` (Infantry, Cavalry, Artillery, or Aerial).
-
     Attributes:
         name: Display name of the unit.
-        unit_type: The UnitType class that decides how this unit's stats grow.
+        unit_type: The UnitType class which decides how this unit's stats grow.
         description: Flavor text for the unit.
         ancestry: The unit's ancestry, e.g. "Human" or "Dwarf".
         experience: Current experience level.
         equipment: Current equipment level.
-        tier: Power tier of the unit.
+        tier: An Army must field certain number of lower-tier units before it can field high-tier units.
         battles: Number of battles the unit has fought.
         size: Full strength of the unit.
         casualties: Remaining strength. Starts equal to `size` and goes

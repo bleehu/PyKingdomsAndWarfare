@@ -6,9 +6,10 @@ from .UnitType import UnitType
 class Infantry(UnitType):
     """Foot soldiers. Level up with a focus on defense and morale.
 
-    Each level: +1 attack, +2 defense, +2 morale, and +1 command, except on
-    reaching Elite, where they gain +1 attacks instead of command. Each
-    equipment level: +2 power, +2 toughness, and +1 damage on reaching Super-heavy.
+    Each level: +1 attack, +2 defense, +2 morale, and +1 command. 
+    On reaching Elite, where they gain +1 attacks instead of command. 
+    Each equipment level: +2 power, +2 toughness. 
+    Also +1 damage on reaching Super-heavy.
     """
 
     def level_up(experience: UnitEnums.Experience, attacks: int, attack: int, defense: int, morale: int, command: int) -> tuple[int, int, int, int, int]:

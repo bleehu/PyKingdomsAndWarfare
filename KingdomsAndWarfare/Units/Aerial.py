@@ -6,8 +6,9 @@ from .UnitType import UnitType
 class Aerial(UnitType):
     """Flying units. Level up evenly, with extra command.
 
-    Each level: +1 attack, +1 defense, +1 morale, +2 command, and +1 attacks
-    on reaching Elite. Each equipment level: +1 power, +1 toughness, and +1
+    Each level: +1 attack, +1 defense, +1 morale, +2 command. 
+    Also +1 attacks on reaching Elite. 
+    Each equipment level: +1 power, +1 toughness, and +1
     damage on reaching Super-heavy.
     """
 

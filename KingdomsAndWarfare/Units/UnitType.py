@@ -8,8 +8,8 @@ class UnitType(metaclass = ABCMeta):
     """Abstract base for a kind of unit (Infantry, Cavalry, Artillery, Aerial).
 
     A unit type holds no state. It only defines how a unit's stats change when
-    it gains or loses experience or equipment. Subclasses are used as the
-    class itself, never instantiated: a `Unit` stores the class in
+    it gains or loses experience or equipment. Subclasses are used to override 
+    behavior, never instantiated: a `Unit` stores the class in
     `unit_type` and calls these methods on it directly, which is why they take
     no `self`.
 
